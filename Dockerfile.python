@@ -1,0 +1,5 @@
+FROM python:3.9.13-slim-buster
+WORKDIR /app/
+COPY src /app
+RUN pip3 install pawnlib toml
+ENTRYPOINT ["/app/entrypoint.sh"]

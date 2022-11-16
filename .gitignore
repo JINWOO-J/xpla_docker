@@ -1,0 +1,21 @@
+.env
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+.vscode
+*.iml
+BUILD_ARGS
+DEBUG_ARGS
+json/*
+logs/*
+conf/*.py
+cert/*
+statdb/*
+__pycache__/
+*.py[cod]
+*$py.class
+data/*
+xpla
+src/logs/*

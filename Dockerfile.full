@@ -1,0 +1,22 @@
+FROM golang:1.19
+ARG BUILD_VERSION
+ENV BUILD_VERSION=${BUILD_VERSION}
+
+WORKDIR /xpla_src
+COPY xpla /xpla_src
+COPY src /app
+RUN apt update && apt -y install pip && pip3 install pawnlib toml
+RUN git checkout ${BUILD_VERSION}
+RUN make install
+ENV HOME="/data"
+ENV STDOUT="true"
+#ENV DATA_DIR="/data"
+ENV PATH=${PATH}:/src:/app
+WORKDIR /app
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+
+#FROM python:3.9.13-slim-buster
+#WORKDIR /app/
+#COPY --from=0 /go/bin/ /app
+#CMD ["./xpla"]

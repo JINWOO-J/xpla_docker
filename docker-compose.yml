@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+    xpla:
+        image: 'jinwoo/xpla:v1.1.2'
+        container_name: "xpla"
+#        entrypoint: tail -f /dev/null
+        entrypoint: /init
+        restart: "always"
+        environment:
+#            DATA_DIR: "/data"
+            NETWORK: "mainnet"
+            MONIKER: "iconloop_sentry01"
+            ROLE: "sentry"
+            config_rpc__laddr: "tcp://0.0.0.0:26657"
+            #config_p2p__seeds: "15efa0a83dff372752369cc984492d9ee72f332b@54.81.115.88:26656,e0d49fdef6aff95ed290ca4acafa2fdd312abd99@35.79.122.205:26656,d5c5908a5390b2278180ce975d94d4a43da4952b@34.89.191.254:26656"
+            app_minimum-gas-prices : "850000000000axpla"
+            STDOUT: "false"
+            IS_AUTOGEN_CERT: "true"
+            STAT_INTERVAL: "3"
+            SLACK_URL: ""
+            STACK_LIMIT: 100
+            SEND_SLACK: "false"
+
+        cap_add:
+            - IPC_LOCK
+        network_mode: bridge
+        ports:
+            - "26657:26657"
+            - "26656:26656"
+
+        volumes:
+            - ./data:/data
+            - ./src:/app
+
+        ulimits:
+            nproc: 65535
+            nofile:
+                soft: 65535
+                hard: 65535
