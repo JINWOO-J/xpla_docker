@@ -4,7 +4,7 @@
 # wget https://raw.githubusercontent.com/xpladev/mainnet/main/dimension_37-1/genesis.json
 
 VGO=go # Set to vgo if building in Go 1.10
-VERSION = v1.0.0
+VERSION = v1.1.2
 BINARY_NAME = XPLA
 REPO_HUB = jinwoo
 NAME = xpla
@@ -20,6 +20,7 @@ LOWER_UNAME := `echo $(UNAME) | tr A-Z a-z`
 BASE_IMAGE = ""
 
 XPLA_PATH = xpla
+NETWORK := testnet
 
 GO_OS=$(shell go env GOOS)
 GO_ARCH=$(shell go env GOARCH)
@@ -55,6 +56,12 @@ else
 	DOCKER_BUILD_OPTION = --no-cache --rm=true
 endif
 
+ifeq ($(MAKECMDGOALS) , bash)
+app_minimum-gas-prices := 850000xpla
+PAWN_DEBUG := true
+endif
+
+
 all: build push
 
 dev: build local_push
@@ -75,6 +82,23 @@ change_version:
 				echo '[CHANGED] ${GIT_DIRTY}'; \
 				git pull ;\
 		fi
+
+make_debug_mode:
+	@$(shell echo $(ECHO_OPTION) "$(OK_COLOR) ----- DEBUG Environment ----- $(MAKECMDGOALS)  \n $(NO_COLOR)" >&2)\
+		$(shell echo "" > DEBUG_ARGS) \
+			$(foreach V, \
+				$(sort $(.VARIABLES)), \
+				$(if  \
+					$(filter-out environment% default automatic, $(origin $V) ), \
+						$($V=$($V)) \
+					$(if $(filter-out "SHELL" "%_COLOR" "%_STRING" "MAKE%" "colorecho" \
+									   "LOWER_UNAME%" \
+									  ".DEFAULT_GOAL" "CURDIR" "TEST_FILES" "DOCKER_BUILD_%" "--%"   , "$V" ),  \
+						$(shell echo $(ECHO_OPTION) '$(OK_COLOR)  $V = $(WARN_COLOR) $($V) $(NO_COLOR) ' >&2;) \
+						$(shell echo '-e $V=$($V)  ' >> DEBUG_ARGS)\
+					)\
+				)\
+			)
 
 make_build_args:
 	@$(shell echo $(ECHO_OPTION) "$(OK_COLOR) ----- Build Environment ----- \n $(NO_COLOR)" >&2)\
@@ -128,11 +152,12 @@ init:
 	git remote add origin git@github.com:JINWOO-J/$(NAME)_docker.git
 	git push -u origin master
 
-bash:
+bash: make_debug_mode
 	docker run $(DOCKER_CLI_OPTION) -it \
+	$(shell cat DEBUG_ARGS) \
 	--network openresty_docker_default \
 	-p 26657:26657 -p 26656:26656  \
-	-e NETWORK=testnet \
+	-e NETWORK=$(NETWORK) \
 	-v $(PWD)/s6/services.d:/etc/s6/services.d -v $(PWD)/data:/data  -v $(PWD)/src:/app \
 	--entrypoint /bin/bash \
 	--name $(NAME) --cap-add SYS_TIME --cap-add IPC_LOCK --rm $(REPO_HUB)/$(NAME):$(TAGNAME)

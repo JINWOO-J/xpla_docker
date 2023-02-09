@@ -18,4 +18,4 @@ __pycache__/
 *$py.class
 data/*
 xpla
-src/logs/*
+**/logs/*
