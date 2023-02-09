@@ -10,6 +10,11 @@ def get_config_toml(key=None):
     default_dir = f"{os.environ.get('DATA_DIR')}/config"
     return f"{default_dir}/{key[:-1]}.toml"
 
+def extract_category(config_key):
+    if "__" in config_key:
+        parsed_config_list = config_key.split("__")
+        return f"\[{parsed_config_list[0]}] {parsed_config_list[1]}"
+    return config_key
 
 def toml_parser(config_prefix="config_", dry_run=False):
     config_filename = get_config_toml(config_prefix)
@@ -24,12 +29,13 @@ def toml_parser(config_prefix="config_", dry_run=False):
                 config_key = k.replace(config_prefix, "")
                 old_value = config_flat_dict.get(config_key)
                 v = return_guess_type(v)
+
                 if old_value != v and dry_run == False:
-                    pawn.app_logger.info(f"key={config_key}, old={old_value}, new={v}, config_file={config_filename}")
+                    pawn.app_logger.info(f"[CHANGE] key={config_key}, old={old_value}, new={v}, config_file={config_filename}")
                     config_flat_dict[config_key] = v
                     is_updated = "changed"
 
-                pawn.console.debug(f"[{is_updated.upper()}] key={config_key}({type(config_key)}), "
+                pawn.console.debug(f"[{is_updated.upper()}] key={extract_category(config_key):<25} , "
                                    f"old={old_value}({type(old_value)}), new={v}({type(v)}), config_file={config_filename}")
 
         if is_updated == "changed":

@@ -2,6 +2,8 @@
 import common
 import os
 from pawnlib.config import pawnlib_config as pawn
+from pawnlib.typing import FlatDict, str2bool, return_guess_type, guess_type
+
 
 def dict_to_environment(_dict):
     for k, v in _dict.items():
@@ -12,7 +14,7 @@ environments = {
     "DATA_DIR": "data",
     "app_minimum-gas-prices" : "850000000000axpl",
     "app_evm__tracer" : "",
-    "app_evm__max-tx-gas-wanted" : 10,
+    "app_evm__max-tx-gas-wanted" : 0,
     "app_json-rpc__enable" : False,
     "app_json-rpc__address" : "0.0.0.0:8545",
     "app_json-rpc__gas-cap" : 25000000,

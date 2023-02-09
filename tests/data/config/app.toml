@@ -54,9 +54,13 @@ bypass-min-fee-msg-types = [ "/ibc.core.channel.v1.MsgRecvPacket", "/ibc.core.ch
 
 [evm]
 tracer = ""
-max-tx-gas-wanted = 10
+max-tx-gas-wanted = 0
 
 [json-rpc]
+enable = false
+address = "0.0.0.0:8545"
+gas-cap = 25000000
+evm-timeout = "5s"
 txfee-cap = 1
 filter-cap = 200
 feehistory-cap = 100
@@ -64,10 +68,6 @@ logs-cap = 10000
 block-range-cap = 10000
 http-timeout = "30s"
 http-idle-timeout = "2m0s"
-allow-unprotected-txs = true
+allow-unprotected-txs = false
 max-open-connections = 0
-enable-indexer = true
-enable = true
-address = "0.0.0.0:8545"
-gas-cap = 25000000
-evm-timeout = "5s"
+enable-indexer = false

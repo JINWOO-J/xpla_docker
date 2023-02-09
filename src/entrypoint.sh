@@ -81,7 +81,7 @@ function import_keys(){
 }
 
 
-echo ">> DATA_DIR=${DATA_DIR}, NETWORK=${NETWORK}, LOG_PATH=${LOG_PATH}"
+echo ">> DATA_DIR=${DATA_DIR}, NETWORK=${NETWORK}, LOG_PATH=${LOG_PATH}, MONIKER=${MONIKER}"
 
 if [[ "$*" == *"init"*  ]]; then
     echo "Network Name: ${networks[$NETWORK]}"

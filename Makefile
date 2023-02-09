@@ -4,7 +4,7 @@
 # wget https://raw.githubusercontent.com/xpladev/mainnet/main/dimension_37-1/genesis.json
 
 VGO=go # Set to vgo if building in Go 1.10
-VERSION = v1.1.2
+VERSION = v1.2.0
 BINARY_NAME = XPLA
 REPO_HUB = jinwoo
 NAME = xpla
@@ -59,10 +59,31 @@ endif
 ifeq ($(MAKECMDGOALS) , bash)
 app_minimum-gas-prices := 850000xpla
 PAWN_DEBUG := true
+STAT_INTERVAL := 1
+MONIKER := PARA_`echo $RANDOM | md5sum | head -c 20; echo;`
+app_minimum-gas-prices := "850000000000axpla"
+app_evm__tracer := ""
+app_evm__max-tx-gas-wanted := 0
+app_json-rpc__enable := "false"
+app_json-rpc__address := "0.0.0.0:8545"
+app_json-rpc__gas-cap := 25000000
+app_json-rpc__evm-timeout := "5s"
+app_json-rpc__txfee-cap := "1"
+app_json-rpc__filter-cap := "200"
+app_json-rpc__feehistory-cap := "100"
+app_json-rpc__logs-cap := "10000"
+app_json-rpc__block-range-cap := "10000"
+app_json-rpc__http-timeout := "30s"
+app_json-rpc__http-idle-timeout := "2m0s"
+app_json-rpc__allow-unprotected-txs := "false"
+app_json-rpc__max-open-connections := 0
+app_json-rpc__enable-indexer := "false"
+app_json-rpc__ws-address :=  "0.0.0.0:8546"
+app_json-rpc__api := "eth,net,web3,personal"
 endif
 
 
-all: build push
+all: build
 
 dev: build local_push
 
@@ -155,7 +176,7 @@ init:
 bash: make_debug_mode
 	docker run $(DOCKER_CLI_OPTION) -it \
 	$(shell cat DEBUG_ARGS) \
-	--network openresty_docker_default \
+	--network bridge \
 	-p 26657:26657 -p 26656:26656  \
 	-e NETWORK=$(NETWORK) \
 	-v $(PWD)/s6/services.d:/etc/s6/services.d -v $(PWD)/data:/data  -v $(PWD)/src:/app \
