@@ -5,7 +5,7 @@ ENV BUILD_VERSION=${BUILD_VERSION}
 WORKDIR /xpla_src
 COPY xpla /xpla_src
 COPY src /app
-RUN apt update && apt -y install pip && pip3 install pawnlib toml
+RUN apt update && apt -y install pip && pip3 install --break-system-packages pawnlib toml
 RUN git checkout ${BUILD_VERSION}
 RUN make install
 ENV HOME="/data"

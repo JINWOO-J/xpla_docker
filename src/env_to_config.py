@@ -4,7 +4,33 @@ from pawnlib.typing import FlatDict, str2bool, return_guess_type, guess_type
 from pawnlib.output import open_file, dump, classdump, is_file
 import toml
 import os
+import json
+import re
 
+
+def parse_env_value(value):
+    try:
+        # JSON 파싱을 시도하여 Python 데이터 타입으로 변환
+        return json.loads(value)
+    except json.JSONDecodeError:
+        # JSON 파싱이 실패하면 원래의 문자열을 반환
+        return value
+
+def parse_env_list(env_value):
+    # 환경변수 값의 양 끝 공백 제거
+    env_value = env_value.strip()
+
+    # 마지막 문자가 콤마인 경우 제거
+    env_value = env_value.strip()
+    # 정규식을 사용하여 배열 형식의 문자열을 검사하고 마지막 콤마 제거
+    env_value = re.sub(r'\s*,\s*\]', ']', env_value)
+
+    # 문자열을 JSON 배열로 파싱
+    try:
+        return json.loads(env_value)
+    except json.JSONDecodeError:
+        # 파싱 실패 시 빈 리스트 반환
+        return env_value
 
 def get_config_toml(key=None):
     default_dir = f"{os.environ.get('DATA_DIR')}/config"
@@ -28,7 +54,9 @@ def toml_parser(config_prefix="config_", dry_run=False):
             if k.startswith(config_prefix):
                 config_key = k.replace(config_prefix, "")
                 old_value = config_flat_dict.get(config_key)
-                v = return_guess_type(v)
+                # v = return_guess_type(v)
+                v = parse_env_list(v)  # 환경 변수의 값을 적절한 데이터 타입으로 변환
+
 
                 if old_value != v and dry_run == False:
                     pawn.app_logger.info(f"[CHANGE] key={config_key}, old={old_value}, new={v}, config_file={config_filename}")
@@ -46,6 +74,9 @@ def toml_parser(config_prefix="config_", dry_run=False):
 
 
 def main(dry_run=False):
+
+    env_value = '["/ibc.core.channel.v1.MsgRecvPacket", "/ibc.core.channel.v1.MsgAcknowledgement", "/ibc.core.client.v1.MsgUpdateClient", "/ibc.applications.transfer.v1.MsgTransfer", "/ibc.core.channel.v1.MsgTimeout", "/ibc.core.channel.v1.MsgTimeoutOnClose",]'
+
     pawn.console.debug("Start DEBUG mode")
     pawn.set(
         app_name="initialize",

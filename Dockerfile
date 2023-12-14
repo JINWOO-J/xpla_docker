@@ -9,7 +9,7 @@ ENV PATH=${PATH}:/src:/app
 WORKDIR /xpla_src
 COPY xpla /xpla_src
 COPY src /app
-RUN apt update && apt -y install pip && pip3 install pawnlib toml python-dotenv
+RUN apt update && apt -y install pip && pip3 install --break-system-packages pawnlib toml python-dotenv
 RUN make install
 
 ADD https://github.com/just-containers/s6-overlay/releases/download/v2.2.0.3/s6-overlay-amd64-installer /tmp/

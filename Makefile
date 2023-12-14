@@ -4,7 +4,7 @@
 # wget https://raw.githubusercontent.com/xpladev/mainnet/main/dimension_37-1/genesis.json
 
 VGO=go # Set to vgo if building in Go 1.10
-VERSION = v1.2.0
+VERSION = v1.3.0
 BINARY_NAME = XPLA
 REPO_HUB = jinwoo
 NAME = xpla
@@ -80,6 +80,7 @@ app_json-rpc__max-open-connections := 0
 app_json-rpc__enable-indexer := "false"
 app_json-rpc__ws-address :=  "0.0.0.0:8546"
 app_json-rpc__api := "eth,net,web3,personal"
+app_tls__bypass-min-fee-msg-types := "[\"/ibc.core.channel.v1.MsgRecvPacket\", \"/ibc.core.channel.v1.MsgAcknowledgement\", \"/ibc.core.client.v1.MsgUpdateClient\", \"/ibc.applications.transfer.v1.MsgTransfer\", \"/ibc.core.channel.v1.MsgTimeout\", \"/ibc.core.channel.v1.MsgTimeoutOnClose\", ]"
 endif
 
 
