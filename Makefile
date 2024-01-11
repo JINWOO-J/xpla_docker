@@ -4,7 +4,7 @@
 # wget https://raw.githubusercontent.com/xpladev/mainnet/main/dimension_37-1/genesis.json
 
 VGO=go # Set to vgo if building in Go 1.10
-VERSION = v1.3.0
+VERSION = v1.3.2
 BINARY_NAME = XPLA
 REPO_HUB = jinwoo
 NAME = xpla
