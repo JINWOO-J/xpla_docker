@@ -1,7 +1,7 @@
 version: "3.8"
 services:
     xpla:
-        image: 'jinwoo/xpla:v1.2.0'
+        image: 'jinwoo/xpla:v1.3.2'
         container_name: "xpla"
         privileged: true
         #        entrypoint: tail -f /dev/null

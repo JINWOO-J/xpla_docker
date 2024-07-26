@@ -1,4 +1,4 @@
-FROM golang:1.19
+FROM golang:1.20
 ARG VERSION
 ENV VERSION=${VERSION}
 #ENV HOME="/data"
