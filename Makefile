@@ -4,7 +4,7 @@
 # wget https://raw.githubusercontent.com/xpladev/mainnet/main/dimension_37-1/genesis.json
 
 VGO=go # Set to vgo if building in Go 1.10
-VERSION = v1.5.2
+VERSION = v1.6.0
 BINARY_NAME = XPLA
 REPO_HUB = jinwoo
 NAME = xpla
@@ -140,6 +140,10 @@ make_build_args:
 test:
 	docker buildx build --platform linux/amd64 --push  $(DOCKER_BUILD_OPTION) -t $(REPO_HUB)/$(NAME):$(TAGNAME) .
 	#cd $(XPLA_PATH) && $(MAKE)
+
+
+slim: make_build_args change_version
+	docker $(DOCKER_BUILD_CMD) $(shell cat BUILD_ARGS) $(DOCKER_BUILD_OPTION) -f Dockerfile.slim -t $(REPO_HUB)/$(NAME):$(TAGNAME)-slim .
 
 
 build: make_build_args change_version

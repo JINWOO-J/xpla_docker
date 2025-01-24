@@ -47,5 +47,6 @@ fi
 
 export config_p2p__seeds=${config_p2p__seeds:-${seeds[${NETWORK}]}}
 export NETWORK_ID=${networks[$NETWORK]}
+export client_chain_id="${NETWORK_ID}"
 
 alias xplad="xplad ${GLOBAL_OPT}"

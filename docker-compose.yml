@@ -1,7 +1,7 @@
 version: "3.8"
 services:
     xpla:
-        image: 'jinwoo/xpla:v1.3.2'
+        image: 'jinwoo/xpla:v1.6.0'
         container_name: "xpla"
         privileged: true
         #        entrypoint: tail -f /dev/null
@@ -9,15 +9,17 @@ services:
         restart: "always"
         environment:
 #            DATA_DIR: "/data"
+
             NETWORK: "mainnet"
             MONIKER: "iconloop_sentry01"
-            ROLE: "sentry"
+            LOG_LEVEL: "info"
             config_rpc__laddr: "tcp://0.0.0.0:26657"
-            #config_p2p__seeds: "15efa0a83dff372752369cc984492d9ee72f332b@54.81.115.88:26656,e0d49fdef6aff95ed290ca4acafa2fdd312abd99@35.79.122.205:26656,d5c5908a5390b2278180ce975d94d4a43da4952b@34.89.191.254:26656"
-#            app_minimum-gas-prices : "850000000000axpla"
+            #app_minimum-gas-prices : "850000000000axpla"
             app_evm__tracer: ""
             app_evm__max-tx-gas-wanted: 0
-            app_json-rpc__enable: "false"
+            app_json-rpc__ws-address: "0.0.0.0:8546"
+            app_json-rpc__api: "eth,net,web3,personal"
+            app_json-rpc__enable: False
             app_json-rpc__address: "0.0.0.0:8545"
             app_json-rpc__gas-cap: 25000000
             app_json-rpc__evm-timeout: "5s"
@@ -30,12 +32,35 @@ services:
             app_json-rpc__http-idle-timeout: "2m0s"
             app_json-rpc__allow-unprotected-txs: "false"
             app_json-rpc__max-open-connections: 0
-            app_json-rpc__enable-indexer: "false"
-            app_json-rpc__ws-address:  "0.0.0.0:8546"
-            app_json-rpc__api: "eth,net,web3,personal"
+            app_json-rpc__enable-indexer: False
             app_tls__bypass-min-fee-msg-types: '[ "/ibc.core.channel.v1.MsgRecvPacket", "/ibc.core.channel.v1.MsgAcknowledgement", "/ibc.core.client.v1.MsgUpdateClient", "/ibc.applications.transfer.v1.MsgTransfer", "/ibc.core.channel.v1.MsgTimeout", "/ibc.core.channel.v1.MsgTimeoutOnClose",]'
-
             STDOUT: "false"
+
+
+            #ROLE: "sentry"
+#             config_rpc__laddr: "tcp://0.0.0.0:26657"
+#             #config_p2p__seeds: "15efa0a83dff372752369cc984492d9ee72f332b@54.81.115.88:26656,e0d49fdef6aff95ed290ca4acafa2fdd312abd99@35.79.122.205:26656,d5c5908a5390b2278180ce975d94d4a43da4952b@34.89.191.254:26656"
+# #            app_minimum-gas-prices : "850000000000axpla"
+#             app_evm__tracer: ""
+#             app_evm__max-tx-gas-wanted: 0
+#             app_json-rpc__enable: "false"
+#             app_json-rpc__address: "0.0.0.0:8545"
+#             app_json-rpc__gas-cap: 25000000
+#             app_json-rpc__evm-timeout: "5s"
+#             app_json-rpc__txfee-cap: "1"
+#             app_json-rpc__filter-cap: "200"
+#             app_json-rpc__feehistory-cap: "100"
+#             app_json-rpc__logs-cap: "10000"
+#             app_json-rpc__block-range-cap: "10000"
+#             app_json-rpc__http-timeout: "30s"
+#             app_json-rpc__http-idle-timeout: "2m0s"
+#             app_json-rpc__allow-unprotected-txs: "false"
+#             app_json-rpc__max-open-connections: 0
+#             app_json-rpc__enable-indexer: "false"
+#             app_json-rpc__ws-address:  "0.0.0.0:8546"
+#             app_json-rpc__api: "eth,net,web3,personal"
+#             app_tls__bypass-min-fee-msg-types: '[ "/ibc.core.channel.v1.MsgRecvPacket", "/ibc.core.channel.v1.MsgAcknowledgement", "/ibc.core.client.v1.MsgUpdateClient", "/ibc.applications.transfer.v1.MsgTransfer", "/ibc.core.channel.v1.MsgTimeout", "/ibc.core.channel.v1.MsgTimeoutOnClose",]'
+
             IS_AUTOGEN_CERT: "true"
             STAT_INTERVAL: "3"
             SLACK_URL: ""

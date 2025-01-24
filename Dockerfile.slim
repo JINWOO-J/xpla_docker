@@ -1,0 +1,54 @@
+FROM golang:1.20-alpine3.17 AS build
+ARG VERSION
+ENV VERSION=${VERSION}
+ENV STDOUT="true"
+ENV PATH=${PATH}:/src:/app
+
+WORKDIR /
+
+RUN apk add --update --no-cache zip git make cmake build-base linux-headers musl-dev libc-dev
+RUN git clone --depth 1 https://github.com/microsoft/mimalloc; cd mimalloc; mkdir build; cd build; cmake ..; make -j$(nproc); make install
+ENV MIMALLOC_RESERVE_HUGE_OS_PAGES=4
+
+WORKDIR /workspace
+
+COPY xpla /workspace
+
+# Download dependencies and CosmWasm libwasmvm if found.
+RUN set -eux; \
+    export ARCH=$(uname -m); \
+    WASM_VERSION=$(go list -mod=readonly -m all | grep github.com/CosmWasm/wasmvm | awk '{print $2}'); \
+    if [ ! -z "${WASM_VERSION}" ]; then \
+      wget -O /lib/libwasmvm_muslc.a https://github.com/CosmWasm/wasmvm/releases/download/${WASM_VERSION}/libwasmvm_muslc.${ARCH}.a; \
+    fi; \
+    go mod download;
+
+# Build executable
+RUN CGO_ENABLED=1 LEDGER_ENABLED=false BUILD_TAGS=muslc LDFLAGS='-linkmode=external -extldflags "-L/mimalloc/build -lmimalloc -Wl,-z,muldefs -static"' make build
+
+# --------------------------------------------------------
+FROM alpine:3.18 AS runtime
+ENV PATH=${PATH}:/src:/app
+ENV COLUMNS=120
+
+COPY --from=build /workspace/build/xplad /usr/bin/xplad
+COPY --from=build /workspace/tests/e2e /opt/tests/e2e
+
+COPY src /app
+
+RUN apk add --update --no-cache gcc python3  python3-dev  musl-dev linux-headers py3-pip bash jq && pip3 install --break-system-packages pawnlib toml python-dotenv
+
+ADD https://github.com/just-containers/s6-overlay/releases/download/v2.2.0.3/s6-overlay-amd64-installer /tmp/
+RUN chmod +x /tmp/s6-overlay-amd64-installer && /tmp/s6-overlay-amd64-installer /
+COPY s6 /etc/
+
+RUN echo "source /app/environments.sh" >> /etc/bash.bashrc
+
+# Expose Cosmos ports
+EXPOSE 9090
+EXPOSE 8545
+EXPOSE 26657/tcp
+EXPOSE 26656/tcp
+
+WORKDIR /app
+ENTRYPOINT ["/app/entrypoint.sh"]

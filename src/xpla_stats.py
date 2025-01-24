@@ -10,9 +10,11 @@ from pawnlib.utils import notify
 import argparse
 import time
 from dotenv import load_dotenv
+import requests
+
 
 disable_ssl_warnings()
-__version = "0.0.3"
+__version = "0.0.4"
 
 
 def print_banner():
@@ -36,45 +38,78 @@ def print_banner():
 
 
 def get_block_info(url):
-    res = jequest(f"{url}/status")
-    if res.get('json') and res['json'].get('result'):
-        sync_info = res['json']['result']['sync_info']
-        validator_info = res['json']['result']['validator_info']
-        validator_address = validator_info.get('address').lower()
+    """
+    Improved block info retrieval function with better error handling and resource management
+    """
+    try:
+        with requests.Session() as session:
+            response = session.get(f"{url}/status", timeout=10, verify=False)
 
-        block_height = int(sync_info['latest_block_height'])
-        latest_block_time = sync_info['latest_block_time']
-        now_time = time.time()
-        # print(pawn.get('last_block'))
-        previous_block = pawn.get('last_block').get('height')
-        previous_time = pawn.get('last_block').get('time')
-        diff_block = block_height - previous_block
-        diff_time = now_time - previous_time
-        tps = round(diff_block / diff_time, 2)
+            if response.status_code != 200:
+                pawn.increase(fail_count=1)
+                return None
 
-        message = f"BH: {block_height:,}, TPS: {tps:,}, BlockTime: {latest_block_time}, Validator: {validator_address}"
-        f" // catch: {sync_info['catching_up']} diff_time: {round(diff_time, 2)}, prev_bh: {previous_block}"
-        if pawn.get('args').verbose:
-            pawn.console.log(message)
-        else:
-            pawn.app_logger.info(message)
+            data = response.json()
+            if not data.get('result'):
+                pawn.increase(fail_count=1)
+                return None
 
-        last_block = {
-            "height": block_height,
-            "time": now_time
-        }
+            sync_info = data['result']['sync_info']
+            validator_info = data['result']['validator_info']
+            validator_address = validator_info.get('address', '').lower()
 
-        pawn.set(
-            last_block=last_block
-        )
+            block_height = int(sync_info['latest_block_height'])
+            latest_block_time = sync_info['latest_block_time']
+            now_time = time.time()
 
-        if diff_block == 0:
-            pawn.increase(fail_count=1)
-        else:
-            pawn.set(fail_count=0)
-        return block_height
-    else:
+            previous_block = pawn.get('last_block', {}).get('height', 0)
+            previous_time = pawn.get('last_block', {}).get('time', now_time)
+
+            diff_block = block_height - previous_block
+            diff_time = now_time - previous_time
+            tps = round(diff_block / diff_time, 2) if diff_time > 0 else 0
+
+            message = (
+                f"BH: {block_height:,}, TPS: {tps:,}, "
+                f"BlockTime: {latest_block_time}, "
+                f"Validator: {validator_address} // "
+                f"catch: {sync_info['catching_up']} "
+                f"diff_time: {round(diff_time, 2)} "
+                f"fail_count: {pawn.get('fail_count')} "
+                f"reason: {pawn.get('reason')}"
+            )
+
+            if pawn.get('args').verbose:
+                pawn.console.log(message)
+            else:
+                pawn.app_logger.info(message)
+
+            pawn.set(
+                last_block={
+                    "height": block_height,
+                    "time": now_time
+                }
+            )
+
+            if diff_block == 0:
+                pawn.increase(fail_count=1)
+                pawn.set(reason="diff_block")
+            else:
+                pawn.set(fail_count=0)
+
+            return block_height
+
+    except requests.exceptions.RequestException as e:
+        pawn.error_logger.error(f"Request failed: {e}")
         pawn.increase(fail_count=1)
+        pawn.set(reason="Request failed")
+        return None
+
+    except (KeyError, ValueError, TypeError) as e:
+        pawn.error_logger.error(f"Data parsing error: {e}")
+        pawn.increase(fail_count=1)
+        pawn.set(reason="Data parsing error")
+        return None
 
 
 def get_parser():
@@ -112,7 +147,6 @@ def main():
             stdout=args.stdout,
             use_hook_exception=True,
         ),
-        PAWN_DEBUG=True,  # Don't use production, because it's not stored exception log.
         app_name=APP_NAME,
         app_data={},
         last_block={
